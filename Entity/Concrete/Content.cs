@@ -1,0 +1,22 @@
+﻿using Core.Entites;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Entity.Concrete
+{
+    public class Content : IEntity
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public double IMDbRating { get; set; }
+        public string Writer { get; set; }
+        public int CategoryId { get; set; }
+        public string Genre { get; set; }
+        public string PlaybackURL { get; set; }
+
+    }
+}
