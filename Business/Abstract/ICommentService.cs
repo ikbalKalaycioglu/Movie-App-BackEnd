@@ -13,7 +13,8 @@ namespace Business.Abstract
     {
         IResult Add(Comment comment);
         IResult Delete(int id);
-        IDataResult<List<Comment>> GetAll();
+        IResult Update(Comment comment);
+        IDataResult<List<CommentDetailDto>> GetAll();
         IDataResult<List<CommentDetailDto>> GetByContentId(int contentId);
     }
 }

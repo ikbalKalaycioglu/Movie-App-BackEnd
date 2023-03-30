@@ -103,5 +103,38 @@ namespace WebAPI.Controllers
             return BadRequest(result);
         }
 
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var result = await _userService.ForgotPassword(email);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("verifyResetToken")]
+        public IActionResult VerifyResetToken(VerifyResetTokenDto verifyResetTokenDto)
+        {
+            var result = _userService.VerifyResetToken(verifyResetTokenDto);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("updatePassword")]
+        public IActionResult UpdatePassword(UpdatePasswordDto updatePasswordDto)
+        {
+            var result = _userService.UpdatePassword(updatePasswordDto);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
     }
 }

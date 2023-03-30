@@ -23,14 +23,14 @@ namespace DataAccess.Concrete
                              on comment.userId equals user.Id
 
                              select new CommentDetailDto
-                             { 
-                                 Id= comment.Id,
-                                 contentId=comment.contentId,
-                                 userId=comment.userId,
+                             {
+                                 Id = comment.Id,
+                                 contentId = comment.contentId,
+                                 userId = comment.userId,
                                  Display = comment.Display,
-                                 Message= comment.Message,
-                                 userName=user.FirstName + " " + user.LastName,
-                                 Email= user.Email
+                                 Message = comment.Message,
+                                 userName = user.FirstName + " " + user.LastName,
+                                 Email = user.Email
                              };
 
 

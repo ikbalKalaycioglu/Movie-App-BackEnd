@@ -2,23 +2,26 @@
 using Business.Constants;
 using Core.Entites.Concrete;
 using Core.Utilities.Results;
+using Core.Utilities.Security.Hashing;
+using Core.Utilities.Security.JWT;
 using DataAccess.Abstract;
 using Entity.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Security.Cryptography;
 
 namespace Business.Concrete
 {
     public class UserManager : IUserService
     {
-        IUserDal _userDal;
+        private readonly IUserDal _userDal;
+        private readonly IMailService _mailService;
+        private readonly ITokenHelper _tokenHelper;
 
-        public UserManager(IUserDal userDal)
+        public UserManager(IUserDal userDal, IMailService mailService, ITokenHelper tokenHelper)
         {
             _userDal = userDal;
+            _mailService = mailService;
+            _tokenHelper = tokenHelper;
         }
 
         public IResult Add(User user)
@@ -33,6 +36,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.UserDeleted);
         }
 
+
         public IDataResult<List<User>> GetAll()
         {
             return new SuccessDataResult<List<User>>(_userDal.GetAll());
@@ -40,7 +44,7 @@ namespace Business.Concrete
 
         public IDataResult<User> GetById(int userId)
         {
-            return new SuccessDataResult<User>(_userDal.Get(c=>c.Id== userId));
+            return new SuccessDataResult<User>(_userDal.Get(c => c.Id == userId));
         }
 
         public IDataResult<User> GetByMail(string email)
@@ -60,6 +64,27 @@ namespace Business.Concrete
             return new SuccessResult(Messages.UserUpdated);
         }
 
+        public IResult UpdatePassword(UpdatePasswordDto updatePasswordDto)
+        {
+            byte[] passwordHash, passwordSalt;
+            var user = _userDal.Get(u => u.Email == updatePasswordDto.Email);
+            if (user is not null)
+            {
+
+                if (updatePasswordDto.Password.Equals(updatePasswordDto.ConfirmPassword))
+                {
+                    HashingHelper.CreatePasswordHash(updatePasswordDto.Password, out passwordHash, out passwordSalt);
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
+                    _userDal.Update(user);
+                    return new SuccessResult(Messages.UserPasswordUpdated);
+                }
+                return new ErrorResult(Messages.PasswordError);
+
+            }
+            return new ErrorResult(Messages.UserNotFound);
+        }
+
         public IResult UpdateUserName(UserForNameDto userForNameDto)
         {
             var updatedUser = _userDal.Get(u => u.Id == userForNameDto.userId);
@@ -67,6 +92,44 @@ namespace Business.Concrete
             updatedUser.LastName = userForNameDto.LastName;
             _userDal.Update(updatedUser);
             return new SuccessResult(Messages.UserUpdated);
+        }
+
+        public IResult VerifyResetToken(VerifyResetTokenDto verifyResetTokenDto)
+        {
+            var user = _userDal.Get(u => u.SecurityStamp == verifyResetTokenDto.ResetToken);
+            if (user is null)
+                return new ErrorResult(Messages.UserNotFound);
+            else
+            {
+                string resetToken = GenerateResetToken();
+                user.SecurityStamp = resetToken; _userDal.Update(user);
+                return new SuccessResult();
+
+            }
+        }
+        public async Task<IResult> ForgotPassword(string email)
+        {
+            var user = _userDal.Get(u => u.Email == email);
+            if (user is null)
+                return new ErrorResult(Messages.UserNotFound);
+            else
+            {
+                string resetToken = GenerateResetToken();
+                await _mailService.SendForgotPasswordAsync(email, email, resetToken);
+                user.SecurityStamp = resetToken;
+                _userDal.Update(user);
+                return new SuccessResult("Mail Gönderildi");
+            }
+        }
+
+        private string GenerateResetToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return WebEncoders.Base64UrlEncode(randomNumber);
+            }
         }
     }
 }

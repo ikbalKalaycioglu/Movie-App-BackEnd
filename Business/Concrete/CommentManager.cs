@@ -35,15 +35,21 @@ namespace Business.Concrete
             return new SuccessResult(Messages.CommentDeleted);
         }
 
-        public IDataResult<List<Comment>> GetAll()
+        public IDataResult<List<CommentDetailDto>> GetAll()
         {
-            return new SuccessDataResult<List<Comment>>(_commentDal.GetAll());
+            return new SuccessDataResult<List<CommentDetailDto>>(_commentDal.GetCommentDetails());
         }
 
         public IDataResult<List<CommentDetailDto>> GetByContentId(int contentId)
         {
             var result = _commentDal.GetCommentDetails(x => x.contentId == contentId);
             return new SuccessDataResult<List<CommentDetailDto>>(result);
+        }
+
+        public IResult Update(Comment comment)
+        {
+            _commentDal.Update(comment);
+            return new SuccessResult("Comment Güncellendi");
         }
     }
 }

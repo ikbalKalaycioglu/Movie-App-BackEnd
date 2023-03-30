@@ -19,6 +19,10 @@ namespace Business.Abstract
         IDataResult<User> GetById(int userId);
         IDataResult<User> GetByMail(string email);
         IDataResult<List<OperationClaim>> GetClaims(User user);
+        IResult UpdatePassword(UpdatePasswordDto updatePasswordDto);
+
+        IResult VerifyResetToken(VerifyResetTokenDto verifyResetTokenDto);
+        Task<IResult> ForgotPassword(string email);
 
     }
 }

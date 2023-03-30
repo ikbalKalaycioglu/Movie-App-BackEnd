@@ -1,5 +1,6 @@
 ﻿using Business.Abstract;
 using Entity.Concrete;
+using Entity.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +54,17 @@ namespace API.Controllers
         public IActionResult Add(Comment comment)
         {
             var result = _commentService.Add(comment);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest();
+        }
+
+        [HttpPost("update")]
+        public IActionResult Update(Comment comment)
+        {
+            var result = _commentService.Update(comment);
             if (result.Success)
             {
                 return Ok(result);
